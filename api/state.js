@@ -18,33 +18,26 @@ import { COOKIE_NAME, readCookie, safeEqual, sessionToken } from '../lib/auth.js
  */
 
 // ---------------------------------------------------------------- Supabase
-const SUPABASE_URL = (
-  process.env.SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  ''
-).replace(/\/+$/, '');
+// Values are trimmed: pasting into a dashboard field very easily drags in a
+// trailing space or newline, which would otherwise break the URL silently.
+const env = (name) => (process.env[name] || '').trim();
+
+const SUPABASE_URL = (env('SUPABASE_URL') || env('NEXT_PUBLIC_SUPABASE_URL')).replace(/\/+$/, '');
 
 const SUPABASE_KEY =
-  process.env.SUPABASE_SECRET_KEY ||
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_SERVICE_KEY ||
-  '';
+  env('SUPABASE_SECRET_KEY') ||
+  env('SUPABASE_SERVICE_ROLE_KEY') ||
+  env('SUPABASE_SERVICE_KEY');
 
 const TABLE = process.env.SUPABASE_TABLE || 'tracker_state';
 const ROW_ID = 'main';
 
 // ---------------------------------------------------------------- Redis
 const REDIS_URL =
-  process.env.KV_REST_API_URL ||
-  process.env.UPSTASH_REDIS_REST_URL ||
-  process.env.REDIS_REST_URL ||
-  '';
+  env('KV_REST_API_URL') || env('UPSTASH_REDIS_REST_URL') || env('REDIS_REST_URL');
 
 const REDIS_TOKEN =
-  process.env.KV_REST_API_TOKEN ||
-  process.env.UPSTASH_REDIS_REST_TOKEN ||
-  process.env.REDIS_REST_TOKEN ||
-  '';
+  env('KV_REST_API_TOKEN') || env('UPSTASH_REDIS_REST_TOKEN') || env('REDIS_REST_TOKEN');
 
 const STATE_KEY = 'oat:state:v1';
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -144,10 +137,31 @@ export default async function handler(req, res) {
 
   const kind = backend();
   if (!kind) {
+    // Names only — never values. Enough to tell a scope problem (nothing at all
+    // is visible) from a typo (something similar is visible under a wrong name).
+    const expected = [
+      'SUPABASE_URL',
+      'NEXT_PUBLIC_SUPABASE_URL',
+      'SUPABASE_SECRET_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'SUPABASE_SERVICE_KEY',
+      'KV_REST_API_URL',
+      'KV_REST_API_TOKEN',
+      'UPSTASH_REDIS_REST_URL',
+      'UPSTASH_REDIS_REST_TOKEN',
+    ];
+
     return res.status(200).json({
       ok: false,
       error: 'not_configured',
       hint: 'Connect Supabase or a Redis store so the tracker is shared across devices. See the README.',
+      diagnostics: {
+        vercelEnv: process.env.VERCEL_ENV || null,
+        recognised: expected.filter((n) => env(n).length > 0),
+        similarNamesFound: Object.keys(process.env)
+          .filter((k) => /SUPABASE|UPSTASH|REDIS|^KV_/i.test(k))
+          .sort(),
+      },
     });
   }
 
