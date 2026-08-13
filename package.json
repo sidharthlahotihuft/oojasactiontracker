@@ -1,0 +1,10 @@
+{
+  "name": "oojas-action-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Password-protected Action Tracker, deployed as a static site on Vercel.",
+  "dependencies": {
+    "@vercel/functions": "^3.9.3"
+  }
+}
