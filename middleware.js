@@ -32,6 +32,17 @@ export default async function middleware(request) {
     });
   }
 
+  // API calls get a JSON 401 rather than a page, so fetch() can react sensibly.
+  if (path.startsWith('/api/')) {
+    return new Response(JSON.stringify({ ok: false, error: 'not_signed_in' }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
+
   // Not signed in: serve the login page without changing the URL.
   return rewrite(new URL('/login.html', request.url));
 }

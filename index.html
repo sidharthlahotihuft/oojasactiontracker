@@ -502,8 +502,88 @@
     font-size: 14px;
   }
 
+  /* ---- due dates ---- */
+  .due-cell { position: relative; display: inline-flex; align-items: center; gap: 1px; flex-shrink: 0; margin-top: 1px; }
+  .due-pick { position: relative; display: inline-flex; }
+  .due-btn {
+    font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px;
+    border: 1px dashed var(--border); color: var(--text-faint); background: var(--surface);
+    white-space: nowrap; user-select: none; cursor: pointer;
+  }
+  .due-btn:hover { border-color: var(--text-faint); color: var(--text-muted); }
+  .due-btn.set { border-style: solid; background: #E0F2FE; color: #075985; border-color: #BAE6FD; }
+  .due-btn.overdue { background: var(--today-bg); color: var(--today-text); border-color: var(--today-border); }
+  .due-input {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    opacity: 0; border: 0; padding: 0; margin: 0; cursor: pointer;
+  }
+  .due-clear {
+    position: relative; z-index: 2; background: none; border: none; color: var(--text-faint);
+    cursor: pointer; font-size: 12px; line-height: 1; padding: 3px 3px;
+  }
+  .due-clear:hover { color: var(--today-text); }
+  .priority-chip.derived { cursor: default; opacity: 0.95; }
+
+  /* ---- top date filter ---- */
+  .due-filter { display: flex; align-items: center; gap: 9px; margin: 12px 0 4px; flex-wrap: wrap; }
+  .due-filter .glabel {
+    font-size: 11px; color: var(--text-faint); text-transform: uppercase;
+    letter-spacing: 0.08em; font-weight: 600;
+  }
+  .due-filter input[type="date"] {
+    padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+  }
+  .due-filter input[type="date"]:focus { outline: none; border-color: #9CA3AF; }
+  .due-summary { font-size: 12.5px; color: var(--text-muted); }
+  .item-row.hidden-due { display: none; }
+
+  /* ---- sync status ---- */
+  .sync-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    white-space: nowrap; border: 1px solid var(--border); color: var(--text-faint);
+    background: var(--surface);
+  }
+  .sync-badge.ok { background: #DCFCE7; color: #166534; border-color: #BBF7D0; }
+  .sync-badge.local { background: var(--week-bg); color: var(--week-text); border-color: var(--week-border); }
+  .sync-badge.error { background: var(--today-bg); color: var(--today-text); border-color: var(--today-border); }
+
+  /* ---- mobile ---- */
   @media (max-width: 640px) {
-    .wrap { padding: 24px 16px 80px; }
+    html { -webkit-text-size-adjust: 100%; }
+    .wrap { padding: 20px 14px 90px; }
+
+    h1 { font-size: 23px; }
+    .eyebrow { font-size: 11px; }
+    .subtitle { font-size: 13.5px; }
+
+    .progress-overview { gap: 10px; padding: 12px 14px; }
+    .priority-counts { width: 100%; }
+
+    .view-switch { flex-wrap: wrap; }
+    .view-switch .toggle-btn { flex: 1; min-width: 140px; }
+
+    .controls { gap: 8px; margin: 16px 0 8px; }
+    /* 16px keeps iOS from zooming the page when a field is focused */
+    #search { font-size: 16px; padding: 11px 14px; }
+    .due-filter input[type="date"] { font-size: 16px; padding: 10px 12px; flex: 1; min-width: 150px; }
+
+    .filter-row { flex-wrap: wrap; }
+
+    .item-row { flex-wrap: wrap; padding: 12px 2px; gap: 8px; }
+    .item-controls { order: 1; flex-direction: row; gap: 4px; margin-right: 0; }
+    .item-row .checkbox { order: 2; }
+    .item-text-wrap { order: 3; flex: 1 1 auto; min-width: calc(100% - 104px); }
+    .due-cell { order: 4; }
+    .meta-badge { order: 5; }
+    .status-chip { order: 6; }
+    .priority-chip { order: 7; }
+    .item-row > .delete-btn { order: 8; margin-left: auto; }
+
+    /* roomier tap targets */
+    .priority-chip, .status-chip, .due-btn { font-size: 12px; padding: 6px 12px; }
+    .order-btn { padding: 4px 7px; font-size: 12px; }
+    .item-row.header-row .item-text { font-size: 11.5px; }
   }
 </style>
 </head>
@@ -512,12 +592,13 @@
 
   <div class="eyebrow">Business Head — Grooming & Spa · HUFT</div>
   <h1>Action Tracker</h1>
-  <div class="subtitle">Running list of open questions and to-dos by person. Click any item's text, a section name, or a sub-group header to edit it, and use the arrows to reorder within a section. Once an item is checked done, a 🗑 button appears to remove it for good. Tag Today / This Week / Later to prioritize — all of it is saved on this device.</div>
+  <div class="subtitle">Running list of open questions and to-dos by person. Click any item's text, a section name, or a sub-group header to edit it, and use the arrows to reorder within a section. Once an item is checked done, a 🗑 button appears to remove it for good. Set a due date and time on any item and the Today / This Week / Later tag follows from it, or tag it by hand if there's no date. Everything saves to the shared tracker, so anyone who signs in sees the same list.</div>
 
   <div class="progress-overview">
     <div class="progress-text" id="progressText">0 / 0 done</div>
     <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
     <div class="priority-counts" id="priorityCounts"></div>
+    <div class="sync-badge" id="syncBadge">Connecting…</div>
   </div>
 
   <div class="view-switch">
@@ -528,6 +609,15 @@
   <div class="controls">
     <input id="search" type="text" placeholder="Search…" />
     <button class="toggle-btn" id="expandBtn">Collapse all</button>
+  </div>
+
+  <div class="due-filter">
+    <span class="glabel">Due by</span>
+    <input type="date" id="dueFilter" aria-label="Show items due on or before this date">
+    <button class="toggle-btn" id="dueFilterToday">Today</button>
+    <button class="toggle-btn" id="dueFilterWeek">Next 7 days</button>
+    <button class="toggle-btn" id="dueFilterClear" style="display:none;">Clear</button>
+    <span class="due-summary" id="dueSummary"></span>
   </div>
 
   <div class="filter-row" id="priorityFilterRow" style="display:none;">
@@ -733,6 +823,12 @@ const expandBtn = document.getElementById('expandBtn');
 const viewPersonBtn = document.getElementById('viewPersonBtn');
 const viewPriorityBtn = document.getElementById('viewPriorityBtn');
 const priorityFilterRow = document.getElementById('priorityFilterRow');
+const syncBadge = document.getElementById('syncBadge');
+const dueFilterEl = document.getElementById('dueFilter');
+const dueFilterClear = document.getElementById('dueFilterClear');
+const dueFilterToday = document.getElementById('dueFilterToday');
+const dueFilterWeek = document.getElementById('dueFilterWeek');
+const dueSummary = document.getElementById('dueSummary');
 
 let checkedState = {};
 let collapsedSections = new Set(); // section names the user has manually collapsed — survives re-renders
@@ -748,6 +844,7 @@ let sectionNameOverrides = {}; // { originalName: { text, originalText } }
 let roleOverrides = {}; // { originalName: { text, originalText } }
 let customSections = {};   // { originalName: { role } }
 let sectionOrderOverride = null; // [SectionName, ...] | null
+let dueState = {};         // { itemId: "YYYY-MM-DDTHH:mm" } — local wall-clock, as typed
 let allExpanded = true;
 let viewMode = 'person'; // 'person' | 'priority'
 let activePriorityFilter = null;
@@ -766,7 +863,224 @@ function guardedAdd(fn) {
 const PRIORITY_CYCLE = ['today', 'week', 'later', null];
 const PRIORITY_LABEL = { today: 'Today', week: 'This week', later: 'Later' };
 
+
+// ---------------------------------------------------------------------------
+// Storage. This file was originally built as a Claude artifact, where
+// window.storage was provided by the host. On a normal web page it does not
+// exist, so every read and write silently failed. This replaces it with a real
+// implementation: state is kept on the server (shared by everyone who signs in)
+// and falls back to localStorage on this device if no store is configured yet.
+// ---------------------------------------------------------------------------
+window.storage = (function () {
+  const LOCAL_PREFIX = 'oat_local:';
+  const DEBOUNCE_MS = 700;
+  const POLL_MS = 25000;
+
+  let mode = 'local';          // 'server' | 'local'
+  let cache = {};              // key -> stringified value
+  let rev = 0;                 // server revision we last saw
+  let pendingWrite = false;
+  let flushTimer = null;
+  let initPromise = null;
+
+  function setBadge(state, text, title) {
+    if (typeof syncBadge === 'undefined' || !syncBadge) return;
+    syncBadge.className = 'sync-badge' + (state ? ' ' + state : '');
+    syncBadge.textContent = text;
+    syncBadge.title = title || '';
+  }
+
+  function readLocalAll() {
+    const out = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf(LOCAL_PREFIX) === 0) out[k.slice(LOCAL_PREFIX.length)] = localStorage.getItem(k);
+      }
+    } catch (e) { /* private mode, storage disabled */ }
+    return out;
+  }
+
+  function writeLocal(key, value) {
+    try { localStorage.setItem(LOCAL_PREFIX + key, value); } catch (e) {}
+  }
+
+  function goLocal(reason) {
+    mode = 'local';
+    const local = readLocalAll();
+    // Keep whatever we already have in memory; local wins only for keys we lack.
+    for (const k in local) if (!(k in cache)) cache[k] = local[k];
+    setBadge('local', 'This device only', reason || 'Changes are saved in this browser, not shared.');
+  }
+
+  async function init() {
+    try {
+      const res = await fetch('/api/state', { cache: 'no-store', headers: { Accept: 'application/json' } });
+      const json = await res.json().catch(function () { return null; });
+      if (res.ok && json && json.ok) {
+        mode = 'server';
+        cache = json.data || {};
+        rev = json.rev || 0;
+        const local = readLocalAll();
+        // First run against a fresh store: carry this device's existing work up.
+        if (Object.keys(cache).length === 0 && Object.keys(local).length > 0) {
+          cache = local;
+          pendingWrite = true;
+          flushNow();
+        }
+        setBadge('ok', 'Synced', 'Shared with everyone who signs in.');
+        setInterval(poll, POLL_MS);
+        window.addEventListener('focus', poll);
+        return;
+      }
+      if (json && json.error === 'not_configured') {
+        goLocal('No shared store connected yet — see the README.');
+        return;
+      }
+      goLocal();
+    } catch (e) {
+      goLocal('Could not reach the server.');
+    }
+  }
+
+  function scheduleFlush() {
+    if (flushTimer) clearTimeout(flushTimer);
+    flushTimer = setTimeout(flushNow, DEBOUNCE_MS);
+  }
+
+  async function flushNow() {
+    if (mode !== 'server') return;
+    if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+    const snapshot = JSON.stringify({ data: cache });
+    try {
+      const res = await fetch('/api/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: snapshot
+      });
+      const json = await res.json().catch(function () { return null; });
+      if (res.ok && json && json.ok) {
+        rev = json.rev || rev;
+        pendingWrite = false;
+        setBadge('ok', 'Synced', 'Shared with everyone who signs in.');
+      } else if (res.status === 401) {
+        setBadge('error', 'Signed out', 'Reload the page and sign in again.');
+      } else {
+        setBadge('error', 'Not saved', 'Retrying…');
+        setTimeout(flushNow, 4000);
+      }
+    } catch (e) {
+      setBadge('error', 'Not saved', 'Offline — will retry.');
+      setTimeout(flushNow, 4000);
+    }
+  }
+
+  async function poll() {
+    if (mode !== 'server' || pendingWrite) return;
+    try {
+      const res = await fetch('/api/state', { cache: 'no-store', headers: { Accept: 'application/json' } });
+      const json = await res.json().catch(function () { return null; });
+      if (!res.ok || !json || !json.ok) return;
+      if (json.rev && json.rev !== rev) {
+        rev = json.rev;
+        cache = json.data || {};
+        if (typeof window.__onRemoteStateChange === 'function') window.__onRemoteStateChange();
+      }
+    } catch (e) {}
+  }
+
+  function ready() {
+    if (!initPromise) initPromise = init();
+    return initPromise;
+  }
+
+  // Flush anything still queued if the tab is closed mid-edit.
+  window.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && pendingWrite) flushNow();
+  });
+
+  return {
+    ready: ready,
+    mode: function () { return mode; },
+    get: async function (key) {
+      await ready();
+      const v = cache[key];
+      return v === undefined || v === null ? null : { value: v };
+    },
+    set: async function (key, value) {
+      await ready();
+      cache[key] = value;
+      if (mode === 'server') {
+        pendingWrite = true;
+        setBadge('', 'Saving…', '');
+        scheduleFlush();
+      } else {
+        writeLocal(key, value);
+      }
+    }
+  };
+})();
+
+// ---------------------------------------------------------------------------
+// Due dates
+// ---------------------------------------------------------------------------
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function getDueAt(item) {
+  const v = dueState[item.id];
+  return v ? v : null;
+}
+
+function parseDue(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+function daysUntilDue(v) {
+  const d = parseDue(v);
+  if (!d) return null;
+  return Math.round((startOfDay(d) - startOfDay(new Date())) / 86400000);
+}
+
+// Today / This week / Later, derived from the due date.
+function priorityFromDue(v) {
+  const days = daysUntilDue(v);
+  if (days === null) return null;
+  if (days <= 0) return 'today';
+  if (days <= 7) return 'week';
+  return 'later';
+}
+
+function isOverdue(item) {
+  const d = parseDue(getDueAt(item));
+  if (!d) return false;
+  if (checkedState[item.id]) return false;
+  return d.getTime() < Date.now();
+}
+
+function formatDue(v) {
+  const d = parseDue(v);
+  if (!d) return 'Due';
+  const datePart = d.getDate() + ' ' + MONTH_ABBR[d.getMonth()];
+  const h = d.getHours(), m = d.getMinutes();
+  if (h === 0 && m === 0) return datePart;
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = (h % 12 === 0) ? 12 : h % 12;
+  return datePart + ', ' + h12 + (m ? ':' + String(m).padStart(2, '0') : '') + ampm;
+}
+
+function toDateInputValue(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 async function loadState() {
+  try {
+    const resultDue = await window.storage.get('action_log_due_dates', false);
+    dueState = (resultDue && resultDue.value) ? JSON.parse(resultDue.value) : {};
+  } catch (e) { dueState = {}; }
   try {
     const result = await window.storage.get('action_log_checked_items', false);
     if (result && result.value) checkedState = JSON.parse(result.value);
@@ -866,6 +1180,11 @@ async function migrateStaleCustomEntries() {
   try { await window.storage.set('action_log_migration_v2', 'done', false); } catch (e) { /* noop */ }
 }
 
+async function saveDueDates() {
+  try { await window.storage.set('action_log_due_dates', JSON.stringify(dueState), false); }
+  catch (e) {}
+}
+
 async function saveChecked() {
   try { await window.storage.set('action_log_checked_items', JSON.stringify(checkedState), false); }
   catch (e) { console.error('Could not save checked state:', e); }
@@ -929,6 +1248,9 @@ function isInProgress(item) {
 }
 
 function getEffectivePriority(item) {
+  // A due date always wins: Today / This week / Later is derived from it.
+  const derived = priorityFromDue(getDueAt(item));
+  if (derived) return derived;
   if (Object.prototype.hasOwnProperty.call(priorityState, item.id)) return priorityState[item.id]; // may be a real value or null (explicitly cleared)
   return item.defaultPriority || null;
 }
@@ -1081,7 +1403,9 @@ function renderPriorityChip(item) {
   const state = getEffectivePriority(item);
   const cls = state ? state : '';
   const label = state ? PRIORITY_LABEL[state] : 'Set';
-  return `<div class="priority-chip ${cls}" data-item-id="${item.id}">${label}</div>`;
+  const derived = !!getDueAt(item);
+  const title = derived ? 'Set automatically from the due date' : 'Click to change';
+  return `<div class="priority-chip ${cls}${derived ? ' derived' : ''}" data-item-id="${item.id}" title="${title}">${label}</div>`;
 }
 
 // Native confirm() dialogs can be silently blocked inside a sandboxed artifact frame —
@@ -1317,6 +1641,28 @@ function attachItemHandlers(row, item, sectionName, sectionsSnapshot) {
   const noteEl = row.querySelector('.item-note');
   const chip = row.querySelector('.priority-chip');
   const statusChip = row.querySelector('.status-chip');
+  const dueInput = row.querySelector('.due-input');
+  const dueClearBtn = row.querySelector('.due-clear');
+
+  if (dueInput) {
+    dueInput.addEventListener('click', (e) => e.stopPropagation());
+    dueInput.addEventListener('change', (e) => {
+      e.stopPropagation();
+      const v = dueInput.value;
+      if (v) dueState[item.id] = v; else delete dueState[item.id];
+      saveDueDates();
+      render();
+    });
+  }
+
+  if (dueClearBtn) {
+    dueClearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      delete dueState[item.id];
+      saveDueDates();
+      render();
+    });
+  }
 
   checkbox.addEventListener('click', () => {
     checkedState[item.id] = !checkedState[item.id];
@@ -1332,6 +1678,8 @@ function attachItemHandlers(row, item, sectionName, sectionsSnapshot) {
 
   chip.addEventListener('click', (e) => {
     e.stopPropagation();
+    // While a due date is set the tag is derived from it, so manual cycling is off.
+    if (getDueAt(item)) return;
     const current = getEffectivePriority(item);
     const idx = PRIORITY_CYCLE.indexOf(current);
     const next = PRIORITY_CYCLE[(idx + 1) % PRIORITY_CYCLE.length];
@@ -1393,6 +1741,17 @@ function buildItemRow(item, sectionName, sectionsSnapshot, itemIndex, itemCount,
   row.dataset.priority = getEffectivePriority(item) || 'unset';
   const meetingBadge = item.needsMeeting ? `<span class="meta-badge meeting">📅 Meeting</span>` : '';
   const dueDateBadge = item.dueDate ? `<span class="meta-badge duedate">🗓 ${item.dueDate}</span>` : '';
+  const dueVal = getDueAt(item);
+  const overdue = isOverdue(item);
+  row.dataset.due = dueVal || '';
+  const dueCellHtml = `
+    <div class="due-cell">
+      <span class="due-pick">
+        <span class="due-btn${dueVal ? ' set' : ''}${overdue ? ' overdue' : ''}">${dueVal ? (overdue ? '⚠ ' : '🗓 ') + formatDue(dueVal) : '🗓 Due'}</span>
+        <input type="datetime-local" class="due-input" value="${dueVal || ''}" aria-label="Due date and time">
+      </span>
+      ${dueVal ? '<button class="due-clear" title="Clear due date">✕</button>' : ''}
+    </div>`;
   const statusChipHtml = `<div class="status-chip ${inProgress ? 'on' : ''}">${inProgress ? 'In progress' : 'Mark in progress'}</div>`;
   const deleteBtnHtml = isDone ? `<button class="delete-btn" title="Remove this item">🗑</button>` : '';
 
@@ -1406,6 +1765,7 @@ function buildItemRow(item, sectionName, sectionsSnapshot, itemIndex, itemCount,
       <div class="item-text">${showOwner ? `<span class="item-owner-tag">${item.person} —</span>` : ''}${displayText}</div>
       <div class="item-note${displayNote ? '' : ' empty-note'}">${displayNote ? displayNote : '+ Add sub-text'}</div>
     </div>
+    ${dueCellHtml}
     ${dueDateBadge}
     ${meetingBadge}
     ${statusChipHtml}
@@ -1627,6 +1987,7 @@ function render() {
 
   applySearch();
   applyPriorityFilter();
+  applyDueFilter();
 }
 
 function applySearch() {
@@ -1651,11 +2012,38 @@ function applyPriorityFilter() {
   refreshSectionVisibility();
 }
 
+function applyDueFilter() {
+  const v = dueFilterEl.value;
+  const cutoff = v ? new Date(v + 'T23:59:59') : null;
+  let shown = 0;
+
+  document.querySelectorAll('.item-row').forEach(row => {
+    if (row.classList.contains('header-row')) { row.classList.remove('hidden-due'); return; }
+    if (!cutoff) { row.classList.remove('hidden-due'); return; }
+    const d = row.dataset.due ? new Date(row.dataset.due) : null;
+    const match = !!d && !isNaN(d.getTime()) && d <= cutoff;
+    row.classList.toggle('hidden-due', !match);
+    if (match) shown++;
+  });
+
+  dueFilterClear.style.display = v ? '' : 'none';
+  if (!v) {
+    const dated = allItems().filter(i => getDueAt(i)).length;
+    const over = allItems().filter(i => isOverdue(i)).length;
+    dueSummary.textContent = dated
+      ? `${dated} with a due date${over ? ` · ${over} overdue` : ''}`
+      : 'No due dates set yet';
+  } else {
+    dueSummary.textContent = `${shown} due on or before ${new Date(v + 'T00:00:00').getDate()} ${MONTH_ABBR[new Date(v + 'T00:00:00').getMonth()]}`;
+  }
+  refreshSectionVisibility();
+}
+
 function refreshSectionVisibility() {
   document.querySelectorAll('.person-section, .priority-section').forEach(section => {
     const totalRows = section.querySelectorAll('.item-row:not(.header-row)').length;
     if (totalRows === 0) { section.style.display = ''; return; } // genuinely empty section (e.g. just created) — always show it, nothing to filter
-    const visibleRows = section.querySelectorAll('.item-row:not(.header-row):not(.hidden-search):not(.hidden-filter)').length;
+    const visibleRows = section.querySelectorAll('.item-row:not(.header-row):not(.hidden-search):not(.hidden-filter):not(.hidden-due)').length;
     section.style.display = visibleRows === 0 ? 'none' : '';
   });
 }
@@ -1701,6 +2089,28 @@ document.querySelectorAll('.filter-chip').forEach(chip => {
     render();
   });
 });
+
+dueFilterEl.addEventListener('change', applyDueFilter);
+
+dueFilterToday.addEventListener('click', () => {
+  dueFilterEl.value = toDateInputValue(new Date());
+  applyDueFilter();
+});
+
+dueFilterWeek.addEventListener('click', () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  dueFilterEl.value = toDateInputValue(d);
+  applyDueFilter();
+});
+
+dueFilterClear.addEventListener('click', () => {
+  dueFilterEl.value = '';
+  applyDueFilter();
+});
+
+// Another device saved a change: pull it in and repaint, keeping the current filters.
+window.__onRemoteStateChange = function () { loadState(); };
 
 loadState();
 </script>
