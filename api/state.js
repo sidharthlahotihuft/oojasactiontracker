@@ -22,7 +22,15 @@ import { COOKIE_NAME, readCookie, safeEqual, sessionToken } from '../lib/auth.js
 // trailing space or newline, which would otherwise break the URL silently.
 const env = (name) => (process.env[name] || '').trim();
 
-const SUPABASE_URL = (env('SUPABASE_URL') || env('NEXT_PUBLIC_SUPABASE_URL')).replace(/\/+$/, '');
+// The project URL is not a secret (it's public in the dashboard URL and useless
+// without a key), so it's hardcoded as a fallback. An env var still wins if set.
+const SUPABASE_URL_FALLBACK = 'https://ucnzunaqgrdnivcghqyo.supabase.co';
+
+const SUPABASE_URL = (
+  env('SUPABASE_URL') ||
+  env('NEXT_PUBLIC_SUPABASE_URL') ||
+  SUPABASE_URL_FALLBACK
+).replace(/\/+$/, '');
 
 const SUPABASE_KEY =
   env('SUPABASE_SECRET_KEY') ||
