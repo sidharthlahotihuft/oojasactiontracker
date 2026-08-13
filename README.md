@@ -1,54 +1,57 @@
 # Oojas Action Tracker
 
 A single-page, self-contained Action Tracker, deployed as a static site on Vercel
-and protected by a username + password.
+behind a proper sign-in page.
 
 ## What's in here
 
 | File | What it does |
 | --- | --- |
 | `index.html` | The tracker itself. Fully self-contained (all CSS/JS inline). |
-| `middleware.js` | Runs on every request at Vercel's edge. Asks for a username + password before serving anything. |
-| `package.json` | Declares `@vercel/functions` (needed by the middleware) and `"type": "module"`. |
-| `vercel.json` | Security + `noindex` headers. |
+| `login.html` | The sign-in page, styled to match the tracker. |
+| `middleware.js` | Runs at Vercel's edge on every request. No valid session cookie → serves the login page instead. |
+| `lib/auth.js` | Credentials, session settings, and shared helpers. **This is the file to edit to change the password.** |
+| `api/login.js` | Checks the submitted email + password, sets the session cookie. |
+| `api/logout.js` | Clears the session cookie and returns to the login page. |
+| `package.json` | Declares `@vercel/functions` and `"type": "module"`. |
+| `vercel.json` | Security + `noindex` + cache headers. |
 | `robots.txt` | Tells search engines to stay away. |
 
 ## Login
 
 | | |
 | --- | --- |
-| Username | `oojaas.sehgal@headsupfortails.com` |
+| Email | `oojaas.sehgal@headsupfortails.com` |
 | Password | `Huft@2026` |
 
-The browser shows a native sign-in dialog on first visit and remembers the
-credentials for the rest of the browser session.
+Signing in sets an `HttpOnly; Secure; SameSite=Lax` cookie that lasts **30 days**
+on that device. The email is matched case-insensitively; the password is exact.
 
-## Deploying (one time, ~3 minutes)
+To sign out, visit `/api/logout`.
 
-1. Push these files to the repo:
+## How the protection works
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Action tracker + password protection"
-   git branch -M main
-   git remote add origin https://github.com/sidharthlahotihuft/oojasactiontracker.git
-   git push -u origin main
-   ```
+The session cookie is not the password — it's a SHA-256 value derived from the
+credentials. The browser never receives the password back, and because the cookie
+is derived, **changing the password automatically signs everyone out**.
 
-2. Go to <https://vercel.com/new>, sign in with GitHub, and import
-   `sidharthlahotihuft/oojasactiontracker`.
+The middleware runs before any file is served, so `index.html` is never sent to a
+browser that isn't signed in. Only `/login.html`, `/api/login`, `/api/logout` and
+`robots.txt` are reachable while signed out.
 
-3. Leave every setting at its default:
-   - **Framework Preset:** `Other`
-   - **Build Command:** empty
-   - **Output Directory:** empty
-   - **Install Command:** default (`npm install`)
+## Deploying
 
-4. Click **Deploy**. After ~30 seconds you get a live URL like
-   `https://oojasactiontracker.vercel.app`, which will prompt for the login above.
+Already connected to Vercel — every push to `main` redeploys automatically:
 
-Every later `git push` to `main` redeploys automatically.
+```bash
+git add .
+git commit -m "Add sign-in page"
+git push
+```
+
+For a first-time setup, import the repo at <https://vercel.com/new> and leave every
+setting at its default (Framework Preset `Other`, no build command, no output
+directory).
 
 ### Custom domain (optional)
 
@@ -57,8 +60,8 @@ then add the CNAME record Vercel shows you at your DNS provider.
 
 ## Changing the password
 
-Either edit the two constants at the top of `middleware.js` and push, **or**
-(better) set them as environment variables so they never appear in the repo:
+Edit the two constants at the top of `lib/auth.js` and push, **or** (better) set
+them as environment variables so they never appear in the repo:
 
 Vercel → Project → **Settings** → **Environment Variables** → add:
 
@@ -67,19 +70,25 @@ Vercel → Project → **Settings** → **Environment Variables** → add:
 | `SITE_USERNAME` | the login email |
 | `SITE_PASSWORD` | the password |
 
-Then **Deployments** → latest → ⋯ → **Redeploy**. Env vars override the
-hardcoded values.
+Then **Deployments** → latest → ⋯ → **Redeploy**. Env vars override the hardcoded
+values. Either way, everyone gets signed out and has to log in again.
 
 ## ⚠️ Note on the hardcoded password
 
-`sidharthlahotihuft/oojasactiontracker` is currently a **public** GitHub repo, so
-anyone who finds it can read `middleware.js` and see the password. Do one of:
+`sidharthlahotihuft/oojasactiontracker` is a **public** GitHub repo, so anyone who
+finds it can read `lib/auth.js` and see the password. Do one of:
 
 - Make the repo private (GitHub → Settings → Danger Zone → Change visibility), **or**
-- Move the credentials to environment variables as described above and remove
-  them from `middleware.js`.
+- Move the credentials to environment variables as described above and delete them
+  from `lib/auth.js`.
 
 Vercel deploys private repos on the free Hobby plan without any extra setup.
+
+## Note on the URL
+
+Vercel's certificate covers `actiontrackerhuft.vercel.app`, not
+`www.actiontrackerhuft.vercel.app`. Always use the URL **without** `www.` — the
+`www.` version will show a certificate warning in the browser.
 
 ## Updating the tracker content
 

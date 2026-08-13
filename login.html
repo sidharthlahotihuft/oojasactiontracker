@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Sign in · Action Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F5F7;
+    --surface: #FFFFFF;
+    --text: #1D2027;
+    --text-muted: #6B7280;
+    --text-faint: #9CA3AF;
+    --border: #E2E4E9;
+    --border-soft: #ECEDF1;
+    --accent: #1D2027;
+    --error-bg: #FEE2E2;
+    --error-text: #B91C1C;
+    --error-border: #FCA5A5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px 32px 30px;
+    box-shadow: 0 1px 2px rgba(29, 32, 39, 0.04), 0 8px 24px rgba(29, 32, 39, 0.06);
+  }
+  .eyebrow {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 26px;
+  }
+  label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  .field { margin-bottom: 16px; }
+  input[type="email"], input[type="password"], input[type="text"] {
+    width: 100%;
+    padding: 11px 13px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(29, 32, 39, 0.08);
+  }
+  .pw-wrap { position: relative; }
+  .pw-toggle {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-faint);
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .pw-toggle:hover { color: var(--text-muted); background: var(--border-soft); }
+  button.submit {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #FFFFFF;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  button.submit:hover { opacity: 0.88; }
+  button.submit:disabled { opacity: 0.55; cursor: default; }
+  .error {
+    display: none;
+    margin-bottom: 18px;
+    padding: 10px 13px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--error-text);
+    background: var(--error-bg);
+    border: 1px solid var(--error-border);
+    border-radius: 8px;
+  }
+  .error.show { display: block; }
+  .foot {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12.5px;
+    color: var(--text-faint);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+  <form class="card" id="loginForm" autocomplete="on">
+    <div class="eyebrow">HUFT · Grooming &amp; Spa</div>
+    <h1>Action Tracker</h1>
+    <div class="subtitle">Sign in to view and edit the tracker.</div>
+
+    <div class="error" id="errorBox" role="alert"></div>
+
+    <div class="field">
+      <label for="username">Email</label>
+      <input type="email" id="username" name="username" autocomplete="username"
+             spellcheck="false" autocapitalize="none" required autofocus>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" name="password"
+               autocomplete="current-password" required>
+        <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">Show</button>
+      </div>
+    </div>
+
+    <button type="submit" class="submit" id="submitBtn">Sign in</button>
+
+    <div class="foot">You'll stay signed in on this device for 30 days.</div>
+  </form>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const errorBox = document.getElementById('errorBox');
+  const submitBtn = document.getElementById('submitBtn');
+  const pwInput = document.getElementById('password');
+  const pwToggle = document.getElementById('pwToggle');
+
+  pwToggle.addEventListener('click', () => {
+    const showing = pwInput.type === 'text';
+    pwInput.type = showing ? 'password' : 'text';
+    pwToggle.textContent = showing ? 'Show' : 'Hide';
+    pwToggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    pwInput.focus();
+  });
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('show');
+  }
+
+  function clearError() {
+    errorBox.textContent = '';
+    errorBox.classList.remove('show');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const username = document.getElementById('username').value.trim();
+    const password = pwInput.value;
+
+    if (!username || !password) {
+      showError('Enter both your email and password.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      let data = {};
+      try { data = await res.json(); } catch (_) {}
+
+      if (res.ok && data.ok) {
+        window.location.replace('/');
+        return;
+      }
+
+      showError(data.error || 'Incorrect email or password.');
+    } catch (err) {
+      showError('Could not reach the server. Check your connection and try again.');
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+    pwInput.value = '';
+    pwInput.focus();
+  });
+</script>
+
+</body>
+</html>
